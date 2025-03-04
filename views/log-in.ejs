@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Uploader</title>
+  </head>
+  <body>
+    <main>
+      <h2>Log in</h2>
+      <div>
+        <ul>
+          <% if(typeof errors !== 'undefined' && Array.isArray(errors) &&
+          errors.length) {%> <% errors.forEach(error => { %>
+          <li><%= error %></li>
+          <%}); }%>
+        </ul>
+      </div>
+      <form action="/log-in" method="post">
+        <label for="username"
+          >Username
+          <input type="text" name="username" id="username" />
+        </label>
+        <label for="password"
+          >Password
+          <input type="password" name="password" id="password" />
+        </label>
+        <input type="submit" value="LOG IN" />
+      </form>
+      <p>Don't have an account? <a href="/sign-up">Click here to sign up</a></p>
+    </main>
+  </body>
+</html>
