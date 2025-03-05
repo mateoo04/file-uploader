@@ -1,0 +1,29 @@
+<div class="modal fade" tabindex="-1" id="createFolderModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">New folder</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form action="/create-folder" method="post">
+          <input
+            type="hidden"
+            name="currentPath"
+            id="currentPath"
+            value="<%- currentPath ? currentPath : '' %>"
+          />
+          <label for="name"
+            >Folder name <input type="text" name="name" id="name"
+          /></label>
+          <input type="submit" value="CREATE FOLDER" class="btn btn-primary" />
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

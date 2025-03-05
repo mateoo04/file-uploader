@@ -1,5 +1,6 @@
 const path = require('node:path');
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const passport = require('passport');
 require('./config/passport');
 require('dotenv').config();
@@ -37,8 +38,11 @@ app.use(
 );
 
 app.set('trust proxy', true);
-
 app.use(passport.session());
+app.use(cookieParser());
+
+app.use('/css', express.static('./node_modules/bootstrap/dist/css'));
+app.use('/js', express.static('./node_modules/bootstrap/dist/js'));
 
 app.use((req, res, next) => {
   res.locals.user = req.user;

@@ -4,16 +4,50 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>File uploader</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
   </head>
   <body>
     <main>
       <form action="/log-out" method="post">
         <button type="submit">Log out</button>
       </form>
-      <form action="/file/upload" method="post" enctype="multipart/form-data">
+
+      <button
+        onclick="window.location.href='<%- currentPath ? `/navigate?path=${currentPath.split('/').slice(0,-1).join('/')}` : `/navigate`%>'"
+      >
+        Back
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#createFolderModal"
+      >
+        Add folder
+      </button>
+
+      <%- include('./partials/create-folder-modal') %>
+
+      <form action="/upload" method="post" enctype="multipart/form-data">
         <input type="file" name="file" />
-        <input type="submit" value="UPLOAD" />
+        <input type="submit" value="UPLOAD" class="btn" />
       </form>
+      <p><%= `Location: ${currentPath}`%></p>
+      <% if(typeof items !== 'undefined' && Array.isArray(items) &&
+      items.length) { %>
+      <ul>
+        <% items.forEach(item => {%>
+        <li>
+          <a
+            href="<%- `/navigate?path=${(currentPath ? currentPath + '/' : '/') + item}`%>"
+            ><%= item %>
+          </a>
+        </li>
+        <%})%>
+      </ul>
+      <% } %>
     </main>
+    <script src="/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

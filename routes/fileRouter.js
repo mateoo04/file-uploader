@@ -1,5 +1,8 @@
 const path = require('node:path');
 const { Router } = require('express');
+
+const { filesGet, createFolderPost } = require('../controllers/fileController');
+
 const multer = require('multer');
 
 const storage = multer.diskStorage({
@@ -16,9 +19,12 @@ const upload = multer({ storage });
 
 const fileRouter = Router();
 
-fileRouter.get('/', (req, res) => res.render('index'));
+fileRouter.get('/navigate', filesGet);
+
 fileRouter.post('/upload', upload.single('file'), (req, res, next) =>
-  res.redirect('/file')
+  res.redirect('/')
 );
+
+fileRouter.post('/create-folder', createFolderPost);
 
 module.exports = fileRouter;

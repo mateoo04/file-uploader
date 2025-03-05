@@ -3,9 +3,9 @@ const passport = require('passport');
 const {
   validateSignUp,
   validateLogIn,
-  signUp,
-  checkLogInValidation,
-  logOut,
+  signUpPost,
+  checkLogInValidationPost,
+  logOutPost,
 } = require('../controllers/usersController');
 
 const { isAuth, isNotAuth } = require('../middlewares/authMiddleware');
@@ -17,17 +17,17 @@ authRouter.get('/log-in', isNotAuth, (req, res) =>
   res.render('log-in', { errors: [...new Set(req.session?.messages)] })
 );
 
-authRouter.post('/sign-up', validateSignUp, signUp);
+authRouter.post('/sign-up', validateSignUp, signUpPost);
 authRouter.post(
   '/log-in',
   validateLogIn,
-  checkLogInValidation,
+  checkLogInValidationPost,
   passport.authenticate('local', {
     failureRedirect: '/log-in',
     successRedirect: '/',
     failureMessage: 'Invalid username or password entered',
   })
 );
-authRouter.post('/log-out', logOut);
+authRouter.post('/log-out', logOutPost);
 
 module.exports = authRouter;

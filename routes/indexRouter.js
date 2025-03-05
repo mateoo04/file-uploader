@@ -5,8 +5,8 @@ const fileRouter = require('./fileRouter');
 const indexRouter = Router();
 
 indexRouter.use('/', authRouter);
-indexRouter.use('/file', fileRouter);
+indexRouter.use('/', fileRouter);
 
-indexRouter.get('/', (req, res, next) => res.redirect('/file'));
+indexRouter.get('/', (req, res) => res.redirect('/navigate'));
 
 module.exports = indexRouter;

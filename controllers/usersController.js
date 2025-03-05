@@ -55,7 +55,7 @@ const validateLogIn = [
     .withMessage('Password must be at least 6 characters long'),
 ];
 
-async function signUp(req, res, next) {
+async function signUpPost(req, res, next) {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -96,7 +96,7 @@ async function signUp(req, res, next) {
   }
 }
 
-async function checkLogInValidation(req, res, next) {
+async function checkLogInValidationPost(req, res, next) {
   const errors = validationResult(req);
 
   if (!errors.isEmpty())
@@ -107,7 +107,7 @@ async function checkLogInValidation(req, res, next) {
   next();
 }
 
-function logOut(req, res) {
+function logOutPost(req, res) {
   req.logout((err) => {
     if (err) return res.status(500).json({ message: 'Logout failed' });
     req.session.destroy();
@@ -119,7 +119,7 @@ function logOut(req, res) {
 module.exports = {
   validateSignUp,
   validateLogIn,
-  signUp,
-  checkLogInValidation,
-  logOut,
+  signUpPost,
+  checkLogInValidationPost,
+  logOutPost,
 };
