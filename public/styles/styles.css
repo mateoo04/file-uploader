@@ -43,3 +43,22 @@ p {
 #nameUnavailableError {
   display: none;
 }
+
+.file-icon {
+  width: 30px;
+  height: auto;
+}
+
+.file-name {
+  text-decoration: none;
+}
+
+a:hover,
+button:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.options-icon {
+  width: 20px;
+}

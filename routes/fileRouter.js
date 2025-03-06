@@ -5,6 +5,7 @@ const {
   createFolderPost,
   fileUploadPost,
   nameAvailabilityPost,
+  fileDelete,
 } = require('../controllers/fileController');
 
 const fileRouter = Router();
@@ -22,5 +23,7 @@ fileRouter.post('/upload', fileUploadPost, (req, res, next) =>
 );
 
 fileRouter.post('/create-folder', createFolderPost);
+
+fileRouter.delete('/delete', fileDelete);
 
 module.exports = fileRouter;

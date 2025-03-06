@@ -7,12 +7,10 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-function createNewFolderPath(req) {
-  const folderName = req.body.folderName;
-  const currentPath = req.cookies.currentPath || req.body?.currentPath;
+function createPath(currentPath, fileName) {
   return currentPath
-    ? path.join(uploadDir, currentPath, folderName)
-    : path.join(uploadDir, folderName);
+    ? path.join(uploadDir, currentPath, fileName)
+    : path.join(uploadDir, fileName);
 }
 
 const storage = multer.diskStorage({
@@ -44,6 +42,17 @@ function filesGet(req, res, next) {
       return next(err);
     }
 
+    items = items.map((item) => {
+      const fullPath = path.join(folderPath, item);
+
+      if (fs.lstatSync(fullPath).isDirectory()) {
+        return { name: item, type: 'directory' };
+      } else if (fs.lstatSync(fullPath).isFile()) {
+        const ext = path.extname(item).toLowerCase().slice(1);
+        return { name: item, type: ext };
+      }
+    });
+
     if (folderPath.startsWith('uploads')) {
       folderPath = folderPath.slice(7);
     }
@@ -61,7 +70,9 @@ function filesGet(req, res, next) {
 }
 
 function createFolderPost(req, res, next) {
-  let folderPath = createNewFolderPath(req);
+  const folderName = req.body.folderName;
+  const currentPath = req.cookies.currentPath || req.body?.currentPath;
+  let folderPath = createPath(currentPath, folderName);
 
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
@@ -79,10 +90,30 @@ function createFolderPost(req, res, next) {
 }
 
 function nameAvailabilityPost(req, res, next) {
-  if (fs.existsSync(createNewFolderPath(req)))
+  const folderName = req.body.folderName;
+  const currentPath = req.cookies.currentPath || req.body?.currentPath;
+  if (fs.existsSync(createPath(currentPath, folderName)))
     return res.json({ available: false });
 
   return res.json({ available: true });
+}
+
+function fileDelete(req, res, next) {
+  const pathToDelete = createPath(req.cookies?.currentPath, req.query.fileName);
+
+  if (fs.existsSync(pathToDelete)) {
+    if (fs.lstatSync(pathToDelete).isDirectory()) {
+      fs.rm(pathToDelete, { recursive: true }, (err) => {
+        if (err) return next(err);
+        res.redirect(`/navigate?path=${req.cookies.currentPath}`);
+      });
+    } else if (fs.lstatSync(pathToDelete).isFile()) {
+      fs.unlink(pathToDelete, (err) => {
+        if (err) return next(err);
+        res.redirect(`/navigate?path=${req.cookies.currentPath}`);
+      });
+    }
+  }
 }
 
 module.exports = {
@@ -90,4 +121,5 @@ module.exports = {
   createFolderPost,
   fileUploadPost,
   nameAvailabilityPost,
+  fileDelete,
 };

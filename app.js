@@ -2,6 +2,7 @@ const path = require('node:path');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
+const methodOverride = require('method-override');
 require('./config/passport');
 require('dotenv').config();
 
@@ -19,6 +20,7 @@ app.set('view engine', 'ejs');
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 app.use(express.json());
 
 app.use(
@@ -46,6 +48,10 @@ app.use('/js', express.static('./node_modules/bootstrap/dist/js'));
 app.use(
   '/folder-name-validation-script',
   express.static('./utils/folderNameValidation.js')
+);
+app.use(
+  '/delete-modal-initialization',
+  express.static('./utils/deleteModalInitialization.js')
 );
 
 app.use((req, res, next) => {
