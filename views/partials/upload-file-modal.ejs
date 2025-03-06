@@ -1,0 +1,25 @@
+<div class="modal fade" tabindex="-1" id="uploadFileModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">New file</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form action="/upload" method="post" enctype="multipart/form-data">
+          <input type="file" name="file" class="form-control mb-3" />
+          <input
+            type="submit"
+            value="UPLOAD"
+            class="btn bg-primary text-white"
+          />
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

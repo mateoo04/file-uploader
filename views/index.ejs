@@ -7,33 +7,39 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css" />
   </head>
   <body>
-    <main>
-      <form action="/log-out" method="post">
-        <button type="submit">Log out</button>
-      </form>
+    <%- include('./partials/header')%>
+    <main class="container main-content">
+      <div class="d-flex justify-content-center gap-2">
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#createFolderModal"
+        >
+          Add folder
+        </button>
 
-      <button
-        onclick="window.location.href='<%- currentPath ? `/navigate?path=${currentPath.split('/').slice(0,-1).join('/')}` : `/navigate`%>'"
-      >
-        Back
-      </button>
+        <%- include('./partials/create-folder-modal') %>
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#uploadFileModal"
+        >
+          Upload file
+        </button>
+        <%- include('./partials/upload-file-modal') %>
+      </div>
 
-      <button
-        type="button"
-        class="btn btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#createFolderModal"
-      >
-        Add folder
-      </button>
-
-      <%- include('./partials/create-folder-modal') %>
-
-      <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" />
-        <input type="submit" value="UPLOAD" class="btn" />
-      </form>
-      <p><%= `Location: ${currentPath}`%></p>
+      <div class="d-flex align-items-center">
+        <button
+          onclick="window.location.href='<%- currentPath ? `/navigate?path=${currentPath.split('/').slice(0,-1).join('/')}` : `/navigate`%>'"
+          class="back-button"
+        >
+          <img src="icons/arrow-left-circle.svg" alt="" />
+        </button>
+        <p><%- currentPath ? currentPath : '/'%></p>
+      </div>
       <% if(typeof items !== 'undefined' && Array.isArray(items) &&
       items.length) { %>
       <ul>
@@ -48,6 +54,7 @@
       </ul>
       <% } %>
     </main>
-    <script src="/js/bootstrap.bundle.min.js"></script>
+    <%- include('./partials/footer')%>
+    <script src="/folder-name-validation-script"></script>
   </body>
 </html>

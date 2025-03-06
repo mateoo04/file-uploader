@@ -5,29 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>File Uploader</title>
   </head>
-  <body>
-    <main>
-      <h2>Log in</h2>
-      <div>
-        <ul>
-          <% if(typeof errors !== 'undefined' && Array.isArray(errors) &&
-          errors.length) {%> <% errors.forEach(error => { %>
-          <li><%= error %></li>
-          <%}); }%>
-        </ul>
+  <body class="d-flex flex-column">
+    <%- include('./partials/header') %>
+    <main class="main-content">
+      <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="container flex-column d-flex align-items-center">
+          <h2>Log in</h2>
+          <div>
+            <ul>
+              <% if(typeof errors !== 'undefined' && Array.isArray(errors) &&
+              errors.length) {%> <% errors.forEach(error => { %>
+              <li><%= error %></li>
+              <%}); }%>
+            </ul>
+          </div>
+          <form action="/log-in" method="post" class="flex-column d-flex">
+            <label class="mb-3" for="username"
+              >Username
+              <input
+                class="form-control"
+                type="text"
+                name="username"
+                id="username"
+              />
+            </label>
+            <label class="mb-3" for="password"
+              >Password
+              <input
+                type="password"
+                name="password"
+                id="password"
+                class="form-control"
+              />
+            </label>
+            <input
+              type="submit"
+              value="LOG IN"
+              class="btn bg-primary text-white"
+            />
+          </form>
+          <p>
+            Don't have an account? <a href="/sign-up">Click here to sign up</a>
+          </p>
+        </div>
       </div>
-      <form action="/log-in" method="post">
-        <label for="username"
-          >Username
-          <input type="text" name="username" id="username" />
-        </label>
-        <label for="password"
-          >Password
-          <input type="password" name="password" id="password" />
-        </label>
-        <input type="submit" value="LOG IN" />
-      </form>
-      <p>Don't have an account? <a href="/sign-up">Click here to sign up</a></p>
     </main>
   </body>
 </html>

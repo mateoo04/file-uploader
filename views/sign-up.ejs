@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File uploader</title>
 </head>
-<body>
-    <main>
+<body class="d-flex flex-column">
+  <%- include('./partials/header') %>
+  <main class="main-content">
+    <div class="d-flex justify-content-center align-items-center h-100">
+      <div class="container flex-column d-flex align-items-center">
         <h2>Sign up</h2>
         <div>
           <ul>
@@ -16,24 +19,30 @@
             <%}); }%>
           </ul>
         </div>
-        <form action="/sign-up" method="post">        
-            <label for="username"
+        <form action="/sign-up" method="post"class="flex-column d-flex">        
+            <label for="username" class="mb-3"
             >Username
             <input type="text" name="username" id="username"
-            value="<%- user?.username %>" />
+            value="<%- user?.username %>" 
+            class="form-control"/>
           </label>
-          <label for="password"
+          <label for="password" class="mb-3"
             >Password
-            <input type="password" name="password" id="password" />
+            <input type="password" name="password" id="password"
+            class="form-control" />
           </label>
-          <label for="confirmPassword"
+          <label for="confirmPassword" class="mb-3"
             >Confirm password
-            <input type="password" name="confirmPassword" id="confirmPassword" />
+            <input type="password" name="confirmPassword" id="confirmPassword"
+            class="form-control" />
           </label>
-          <input type="submit" value="SIGN UP" />
+          <input type="submit" value="SIGN UP" 
+          class="btn bg-primary text-white"/>
         </form>
         <p>Already have an account? <a href="/log-in">Click here to log in</a></p>
   </form>
+        </div>
+      </div>
     </main>
 </body>
 </html>

@@ -1,0 +1,45 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+header {
+  background-color: var(--primary-color);
+  color: #fff;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 36px;
+}
+
+header h1 {
+  font-size: 1.6em;
+}
+
+h1 a {
+  text-decoration: none;
+  color: #fff;
+}
+
+.back-button {
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+}
+
+.back-button img {
+  width: 30px;
+  height: auto;
+}
+
+.main-content {
+  flex: 1;
+}
+
+p {
+  margin: 0 !important;
+}
+
+#nameUnavailableError {
+  display: none;
+}

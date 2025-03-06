@@ -11,17 +11,29 @@
         ></button>
       </div>
       <div class="modal-body">
-        <form action="/create-folder" method="post">
+        <p id="nameUnavailableError" class="text-danger">
+          Folder with this name already exists!
+        </p>
+        <form action="/create-folder" method="post" class="flex-column d-flex">
           <input
             type="hidden"
             name="currentPath"
             id="currentPath"
             value="<%- currentPath ? currentPath : '' %>"
           />
-          <label for="name"
-            >Folder name <input type="text" name="name" id="name"
+          <label for="name" class="mb-3"
+            >Folder name
+            <input
+              type="text"
+              name="folderName"
+              id="folderName"
+              class="form-control"
           /></label>
-          <input type="submit" value="CREATE FOLDER" class="btn btn-primary" />
+          <input
+            type="submit"
+            value="CREATE FOLDER"
+            class="btn bg-primary text-white"
+          />
         </form>
       </div>
     </div>
