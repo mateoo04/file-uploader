@@ -7,11 +7,14 @@ const {
   nameAvailabilityPost,
   fileDelete,
   renameFilePut,
+  fileDownloadGet,
 } = require('../controllers/storageController');
 
 const storageRouter = Router();
 
 storageRouter.get('/navigate', filesGet);
+
+storageRouter.get('/download', fileDownloadGet);
 
 storageRouter.post('/check-name-availability', nameAvailabilityPost);
 

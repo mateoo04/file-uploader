@@ -154,6 +154,15 @@ async function renameFilePut(req, res, next) {
   });
 }
 
+function fileDownloadGet(req, res, next) {
+  const fileName = req.query.fileName;
+  const filePath = createPath(req.cookies.currentPath, fileName);
+
+  res.download(filePath, fileName, (err) => {
+    if (err) next(err);
+  });
+}
+
 module.exports = {
   filesGet,
   createFolderPost,
@@ -161,4 +170,5 @@ module.exports = {
   nameAvailabilityPost,
   fileDelete,
   renameFilePut,
+  fileDownloadGet,
 };

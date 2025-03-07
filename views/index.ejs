@@ -90,6 +90,15 @@
                 Delete
               </button>
             </li>
+            <% if(item.type !== 'directory'){%>
+            <li>
+              <a
+                class="dropdown-item"
+                href="/storage/download?fileName=<%= item.name%>"
+                >Download</a
+              >
+            </li>
+            <%}%>
           </ul>
         </div>
       </div>
