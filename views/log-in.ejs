@@ -19,7 +19,7 @@
               <%}); }%>
             </ul>
           </div>
-          <form action="/log-in" method="post" class="flex-column d-flex">
+          <form action="/auth/log-in" method="post" class="flex-column d-flex">
             <label class="mb-3" for="username"
               >Username
               <input
@@ -44,11 +44,13 @@
               class="btn bg-primary text-white"
             />
           </form>
-          <p>
-            Don't have an account? <a href="/sign-up">Click here to sign up</a>
+          <p class="pt-3">
+            Don't have an account?
+            <a href="/auth/sign-up">Click here to sign up</a>
           </p>
         </div>
       </div>
     </main>
+    <%- include('./partials/footer')%>
   </body>
 </html>

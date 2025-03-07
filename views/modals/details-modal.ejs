@@ -1,0 +1,49 @@
+<div class="modal fade" tabindex="-1" id="detailsModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">New file</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body details-grid">
+        <p class="details-column-title">Name</p>
+        <div class="d-flex align-content-center gap-2">
+          <p class="details-name">nnnn</p>
+          <button class="btn bg-transparent border-0 p-0 rename-button">
+            <img class="pencil-icon" src="/icons/pencil.svg" alt="" />
+          </button>
+          <div class="form-container mb-3">
+            <form
+              action=""
+              method="post"
+              class="d-flex gap-2"
+              id="renameFileForm"
+            >
+              <input type="hidden" name="_method" value="PUT" />
+              <input
+                class="form-control"
+                type="text"
+                name="fileName"
+                id="fileName"
+              />
+              <input
+                class="btn bg-primary text-white"
+                type="submit"
+                value="SAVE"
+              />
+            </form>
+          </div>
+        </div>
+        <p class="details-column-title">Size</p>
+        <p class="details-size">nnnn</p>
+        <p class="details-column-title">Upload date</p>
+        <p class="details-upload-date">nnn</p>
+      </div>
+    </div>
+  </div>
+</div>

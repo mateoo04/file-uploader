@@ -33,10 +33,10 @@
 
       <div class="d-flex align-items-center mb-3">
         <button
-          onclick="window.location.href='<%- currentPath ? `/navigate?path=${currentPath.split('/').slice(0,-1).join('/')}` : `/navigate`%>'"
+          onclick="window.location.href='<%- currentPath ? `/storage/navigate?path=${currentPath.split('/').slice(0,-1).join('/')}` : `/storage/navigate`%>'"
           class="back-button"
         >
-          <img src="icons/arrow-left-circle.svg" alt="" />
+          <img src="/icons/arrow-left-circle.svg" alt="" />
         </button>
         <p><%- currentPath ? currentPath : '/'%></p>
       </div>
@@ -47,13 +47,13 @@
       >
         <div class="d-flex gap-2 align-items-center">
           <img
-            src="<%- item.type === 'directory' ? 'icons/directory.svg' : 'icons/file.svg' %>"
+            src="<%- item.type === 'directory' ? '/icons/directory.svg' : '/icons/file.svg' %>"
             alt=""
             class="file-icon"
           />
           <a
             class="file-name"
-            href="<%- `/navigate?path=${(currentPath ? currentPath + '/' : '/') + item.name}`%>"
+            href="<%- `/storage/navigate?path=${(currentPath ? currentPath + '/' : '/') + item.name}`%>"
             ><%= item.name %>
           </a>
         </div>
@@ -64,17 +64,28 @@
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            <img class="options-icon" src="icons/three-dots.svg" alt="" />
+            <img class="options-icon" src="/icons/three-dots.svg" alt="" />
             <span class="visually-hidden">Toggle Dropdown</span>
           </button>
           <ul class="dropdown-menu">
-            <li><button class="dropdown-item">Rename</button></li>
+            <li>
+              <button
+                class="dropdown-item details-modal-button"
+                data-bs-toggle="modal"
+                data-bs-target="#detailsModal"
+                data-name="<%= item.name%>"
+                data-size="<%= item.size %>"
+                data-upload-date="<%= item.uploadDate %>"
+              >
+                Details
+              </button>
+            </li>
             <li>
               <button
                 class="dropdown-item delete-modal-button"
                 data-bs-toggle="modal"
                 data-bs-target="#deleteItemModal"
-                data-value="<%= item.name%>"
+                data-name="<%= item.name%>"
               >
                 Delete
               </button>
@@ -84,9 +95,11 @@
       </div>
       <%})%> <% } %>
     </main>
-    <%- include('./modals/delete-item-modal.ejs')%>
-    <script src="/folder-name-validation-script"></script>
-    <script src="/delete-modal-initialization"></script>
+    <%- include('./modals/delete-item-modal.ejs')%> <%-
+    include('./modals/details-modal.ejs')%>
+    <script src="/folderNameValidation.js"></script>
+    <script src="/deleteModalInitialization.js"></script>
+    <script src="/detailsModalInitialization.js"></script>
     <%- include('./partials/footer')%>
   </body>
 </html>

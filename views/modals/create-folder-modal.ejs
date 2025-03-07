@@ -14,7 +14,11 @@
         <p id="nameUnavailableError" class="text-danger">
           Folder with this name already exists!
         </p>
-        <form action="/create-folder" method="post" class="flex-column d-flex">
+        <form
+          action="/storage/create-folder"
+          method="post"
+          class="flex-column d-flex"
+        >
           <input
             type="hidden"
             name="currentPath"

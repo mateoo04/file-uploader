@@ -1,16 +1,17 @@
 const fs = require('fs');
 const path = require('node:path');
+const { format } = require('date-fns');
 const multer = require('multer');
+
+const {
+  createPath,
+  getAvailableName,
+  getDirectorySizeSync,
+} = require('../utils/fileHelper');
 
 const uploadDir = 'uploads';
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
-}
-
-function createPath(currentPath, fileName) {
-  return currentPath
-    ? path.join(uploadDir, currentPath, fileName)
-    : path.join(uploadDir, fileName);
 }
 
 const storage = multer.diskStorage({
@@ -20,9 +21,18 @@ const storage = multer.diskStorage({
       : uploadDir;
     cb(null, folderPath);
   },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + Date.now() + ext);
+  filename: async (req, file, cb) => {
+    getAvailableName(
+      req.cookies.currentPath
+        ? path.join(uploadDir, req.cookies.currentPath)
+        : uploadDir,
+      file.originalname
+    )
+      .then((availableName) => {
+        console.log('name:', availableName);
+        return cb(null, availableName);
+      })
+      .catch((err) => cb(err));
   },
 });
 
@@ -45,12 +55,19 @@ function filesGet(req, res, next) {
     items = items.map((item) => {
       const fullPath = path.join(folderPath, item);
 
-      if (fs.lstatSync(fullPath).isDirectory()) {
-        return { name: item, type: 'directory' };
-      } else if (fs.lstatSync(fullPath).isFile()) {
-        const ext = path.extname(item).toLowerCase().slice(1);
-        return { name: item, type: ext };
-      }
+      const stats = fs.lstatSync(fullPath);
+
+      return {
+        name: item,
+        type: stats.isDirectory()
+          ? 'directory'
+          : path.extname(item).toLowerCase().slice(1),
+        size:
+          stats.size +
+          (stats.isDirectory() ? getDirectorySizeSync(fullPath) : 0) +
+          ' KB',
+        uploadDate: format(stats.birthtime, `d.M.yyyy., H:mm`),
+      };
     });
 
     if (folderPath.startsWith('uploads')) {
@@ -82,7 +99,9 @@ function createFolderPost(req, res, next) {
     }
 
     return res.redirect(
-      `/navigate?path=${req.cookies.currentPath || req.body?.currentPath}`
+      `/storage/navigate?path=${
+        req.cookies.currentPath || req.body?.currentPath
+      }`
     );
   }
 
@@ -90,9 +109,9 @@ function createFolderPost(req, res, next) {
 }
 
 function nameAvailabilityPost(req, res, next) {
-  const folderName = req.body.folderName;
+  const fileName = req.body.folderName || req.body.fileName;
   const currentPath = req.cookies.currentPath || req.body?.currentPath;
-  if (fs.existsSync(createPath(currentPath, folderName)))
+  if (fs.existsSync(createPath(currentPath, fileName)))
     return res.json({ available: false });
 
   return res.json({ available: true });
@@ -105,15 +124,34 @@ function fileDelete(req, res, next) {
     if (fs.lstatSync(pathToDelete).isDirectory()) {
       fs.rm(pathToDelete, { recursive: true }, (err) => {
         if (err) return next(err);
-        res.redirect(`/navigate?path=${req.cookies.currentPath}`);
+        res.redirect(`/storage/navigate?path=${req.cookies.currentPath}`);
       });
     } else if (fs.lstatSync(pathToDelete).isFile()) {
       fs.unlink(pathToDelete, (err) => {
         if (err) return next(err);
-        res.redirect(`/navigate?path=${req.cookies.currentPath}`);
+        res.redirect(`/storage/navigate?path=${req.cookies.currentPath}`);
       });
     }
   }
+}
+
+async function renameFilePut(req, res, next) {
+  const oldName = req.query.previousName;
+  const newName = await getAvailableName(
+    req.cookies.currentPath
+      ? path.join(uploadDir, req.cookies.currentPath)
+      : uploadDir,
+    req.body.fileName
+  );
+
+  const oldPath = createPath(req.cookies.currentPath, oldName);
+  const newPath = oldPath.slice(0, -oldName.length) + newName;
+
+  fs.rename(oldPath, newPath, function (err) {
+    if (err) next(`Error while renaming file: ${err}`);
+
+    res.redirect(`/storage/navigate?path=${req.cookies.currentPath}`);
+  });
 }
 
 module.exports = {
@@ -122,4 +160,5 @@ module.exports = {
   fileUploadPost,
   nameAvailabilityPost,
   fileDelete,
+  renameFilePut,
 };

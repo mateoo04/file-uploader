@@ -19,6 +19,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'utils')));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.json());
@@ -45,14 +46,6 @@ app.use(cookieParser());
 
 app.use('/css', express.static('./node_modules/bootstrap/dist/css'));
 app.use('/js', express.static('./node_modules/bootstrap/dist/js'));
-app.use(
-  '/folder-name-validation-script',
-  express.static('./utils/folderNameValidation.js')
-);
-app.use(
-  '/delete-modal-initialization',
-  express.static('./utils/deleteModalInitialization.js')
-);
 
 app.use((req, res, next) => {
   res.locals.user = req.user;

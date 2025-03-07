@@ -5,10 +5,10 @@ const deleteModalForm = document.getElementById('deleteModalForm');
 
 deleteModalOpenButtons.forEach((button) => {
   button.addEventListener('click', () => {
-    const fileName = button.getAttribute('data-value');
+    const fileName = button.getAttribute('data-name');
     deleteModalForm.setAttribute(
       'action',
-      `/delete?fileName=${fileName}&_method=DELETE`
+      `/storage/delete?fileName=${fileName}&_method=DELETE`
     );
   });
 });

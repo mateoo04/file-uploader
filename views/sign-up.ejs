@@ -19,7 +19,7 @@
             <%}); }%>
           </ul>
         </div>
-        <form action="/sign-up" method="post"class="flex-column d-flex">        
+        <form action="/auth/sign-up" method="post"class="flex-column d-flex">        
             <label for="username" class="mb-3"
             >Username
             <input type="text" name="username" id="username"
@@ -39,10 +39,11 @@
           <input type="submit" value="SIGN UP" 
           class="btn bg-primary text-white"/>
         </form>
-        <p>Already have an account? <a href="/log-in">Click here to log in</a></p>
+        <p class="pt-3">Already have an account? <a href="/auth/log-in">Click here to log in</a></p>
   </form>
         </div>
       </div>
-    </main>
+    </main>    
+    <%- include('./partials/footer')%>
 </body>
 </html>

@@ -1,12 +1,12 @@
 const { Router } = require('express');
 const authRouter = require('./authRouter');
-const fileRouter = require('./fileRouter');
+const storageRouter = require('./storageRouter');
 
 const indexRouter = Router();
 
-indexRouter.use('/', authRouter);
-indexRouter.use('/', fileRouter);
+indexRouter.use('/auth', authRouter);
+indexRouter.use('/storage', storageRouter);
 
-indexRouter.get('/', (req, res) => res.redirect('/navigate'));
+indexRouter.get('/', (req, res) => res.redirect('/storage/navigate'));
 
 module.exports = indexRouter;

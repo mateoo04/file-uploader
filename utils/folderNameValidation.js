@@ -5,7 +5,7 @@ document
 
     const folderName = event.target.folderName.value;
 
-    fetch('/check-folder-name-availability', {
+    fetch('/storage/check-name-availability', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

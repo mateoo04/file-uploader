@@ -54,11 +54,30 @@ p {
 }
 
 a:hover,
-button:hover {
+button:hover,
+input[type='submit']:hover {
   opacity: 0.8;
   cursor: pointer;
 }
 
-.options-icon {
+.options-icon,
+.pencil-icon {
   width: 20px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: repeat(3, 1fr);
+  grid-column-gap: 14px;
+  grid-row-gap: 0px;
+}
+
+.details-column-title {
+  text-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.form-container {
+  display: none;
 }

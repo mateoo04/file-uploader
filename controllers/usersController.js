@@ -112,7 +112,7 @@ function logOutPost(req, res) {
     if (err) return res.status(500).json({ message: 'Logout failed' });
     req.session.destroy();
     res.clearCookie('connect.sid');
-    res.redirect('/log-in');
+    res.redirect('/auth/log-in');
   });
 }
 
