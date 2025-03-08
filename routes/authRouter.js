@@ -8,7 +8,7 @@ const {
   logOutPost,
 } = require('../controllers/usersController');
 
-const { isAuth, isNotAuth } = require('../middlewares/authMiddleware');
+const { isNotAuth } = require('../middlewares/authMiddleware');
 
 const authRouter = Router();
 

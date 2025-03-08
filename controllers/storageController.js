@@ -1,5 +1,5 @@
 const path = require('node:path');
-const { format } = require('date-fns');
+const { format, addDays, isBefore } = require('date-fns');
 const multer = require('multer');
 const { PrismaClient } = require('@prisma/client');
 const { supabase } = require('../config/supabase');
@@ -16,58 +16,114 @@ const upload = multer(multer.memoryStorage());
 
 const handleFileInput = upload.single('file');
 
-async function filesGet(req, res, next) {
-  try {
-    const selectedFolderId =
-      req.query?.folder == null ? null : req.query.folder;
+async function getItems(folderId, userId) {
+  let items, parentFolder;
 
-    let items, selectedFolder;
+  const findItems = () =>
+    prisma.file.findMany({
+      where: {
+        userId,
+        parentId: folderId,
+      },
+      include: {
+        parent: true,
+        children: true,
+      },
+    });
 
-    const findItems = () =>
-      prisma.file.findMany({
+  if (folderId) {
+    [items, parentFolder] = await Promise.all([
+      findItems(),
+      prisma.file.findUnique({
         where: {
-          userId: res.locals.user.id,
-          parentId: selectedFolderId,
+          id: folderId,
         },
         include: {
           parent: true,
-          children: true,
         },
-      });
+      }),
+    ]);
+  } else items = await findItems();
 
-    if (selectedFolderId) {
-      [items, selectedFolder] = await Promise.all([
-        findItems(),
-        prisma.file.findUnique({
-          where: {
-            id: selectedFolderId,
-          },
-          include: {
-            parent: true,
-          },
-        }),
-      ]);
-    } else items = await findItems();
+  items = items.map((item) => ({
+    ...item,
+    createdAt: format(item.createdAt, 'd.M.yyy., H:mm'),
+  }));
 
-    if (selectedFolder) {
-      res.cookie('currentFolder', selectedFolder, {
+  return { items, parentFolder };
+}
+
+async function filesGet(req, res, next) {
+  try {
+    const parentFolderId = req.query?.folder == null ? null : req.query.folder;
+    const shareLinkId = req.query?.shareLinkId;
+
+    const { items, parentFolder } = await getItems(
+      parentFolderId,
+      res.locals.user.id
+    );
+
+    if (parentFolder) {
+      res.cookie('currentFolder', parentFolder, {
         httpOnly: false,
         sameSite: 'strict',
       });
     } else res.clearCookie('currentFolder');
 
-    items = items.map((item) => ({
-      ...item,
-      createdAt: format(item.createdAt, 'd.M.yyy., H:mm'),
-    }));
-
     res.render('index', {
       items,
-      currentFolder: selectedFolder?.name,
+      currentFolder: parentFolder?.name,
       backPath:
-        selectedFolder && selectedFolder.parentId != null
-          ? `/storage/navigate?folder=${selectedFolder.parentId}`
+        parentFolder && parentFolder.parentId != null
+          ? `/storage/navigate?folder=${parentFolder.parentId}`
           : '/storage/navigate',
+      shareLink:
+        req.query?.shareLinkId != null
+          ? `${req.protocol}://${req.get('host')}/storage/shared/${shareLinkId}`
+          : undefined,
+      showLogOut: true,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function sharedFilesGet(req, res, next) {
+  try {
+    const shareLinkId = req.params.shareLinkId;
+
+    const shareLink = await prisma.shareLink.findUnique({
+      where: {
+        id: shareLinkId,
+      },
+    });
+
+    if (isBefore(shareLink.expiresAt, new Date())) {
+      res.status(400).render('error', { message: 'Link has expired.' });
+    }
+
+    const parentFolderId =
+      req.query?.folder == null ? shareLink.folderId : req.query.folder;
+
+    const { items, parentFolder } = await getItems(
+      parentFolderId,
+      shareLink.userId
+    );
+
+    const descendantFolderIds = (await getAllDescendants(shareLink.folderId))
+      .filter((descendant) => descendant.isFolder)
+      .map((folder) => folder.id);
+
+    res.render('shareView', {
+      items,
+      currentFolder: parentFolder?.name,
+      backPath:
+        parentFolder &&
+        parentFolder.parentId != null &&
+        descendantFolderIds.includes(parentFolder.parentId)
+          ? `/storage/shared/${shareLinkId}?folder=${parentFolder.parentId}`
+          : `/storage/shared/${shareLinkId}`,
+      shareLinkId,
     });
   } catch (err) {
     next(err);
@@ -314,8 +370,29 @@ async function fileSizeGet(req, res) {
   }
 }
 
+async function createShareLinkPost(req, res, next) {
+  try {
+    const shareLink = await prisma.shareLink.create({
+      data: {
+        userId: res.locals.user.id,
+        folderId: req.cookies.currentFolder?.id,
+        expiresAt: addDays(new Date(), Number(req.body.duration) || 1),
+      },
+    });
+
+    return res.redirect(
+      req.cookies.currentFolder != null
+        ? `/storage/navigate?folder=${req.cookies.currentFolder.id}&shareLinkId=${shareLink.id}`
+        : `/storage/navigate?shareLinkId=${shareLink.id}`
+    );
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   filesGet,
+  sharedFilesGet,
   createFolderPost,
   handleFileInput,
   fileUploadPost,
@@ -324,4 +401,5 @@ module.exports = {
   renameFilePut,
   fileDownloadGet,
   fileSizeGet,
+  createShareLinkPost,
 };

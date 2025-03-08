@@ -9,27 +9,7 @@
   <body class="d-flex flex-column">
     <%- include('./partials/header')%>
     <main class="container main-content mt-3">
-      <div class="d-flex justify-content-center gap-2">
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#createFolderModal"
-        >
-          Add folder
-        </button>
-
-        <%- include('./modals/create-folder-modal') %>
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#uploadFileModal"
-        >
-          Upload file
-        </button>
-        <%- include('./modals/upload-file-modal') %>
-      </div>
+      <div class="d-flex justify-content-center gap-2"></div>
 
       <div class="d-flex align-items-center mb-3">
         <button
@@ -38,23 +18,9 @@
         >
           <img src="/icons/arrow-left-circle.svg" alt="Back" />
         </button>
-        <button
-          data-bs-toggle="modal"
-          data-bs-target="#shareFolderModal"
-          class="share-button border-0 rounded-circle bg-primary"
-        >
-          <img src="/icons/share.svg" alt="Share" />
-        </button>
         <p><%- currentFolder ? currentFolder : 'Storage'%></p>
       </div>
-      <%if( typeof shareLink !== 'undefined' && shareLink){%>
-      <p class="bg-success-subtle mb-4 pt-2 pb-2 ps-4 pe-4 rounded-4">
-        Share the folder with this link:
-        <a class="text-decoration-none" href="<%= shareLink %>"
-          ><%= shareLink %></a
-        >
-      </p>
-      <%}%> <% if(typeof items !== 'undefined' && Array.isArray(items) &&
+      <% if(typeof items !== 'undefined' && Array.isArray(items) &&
       items.length) { %> <% items.forEach(item => {%>
       <div
         class="card d-flex flex-row gap-2 p-2 mt-1 mb-2 align-items-center justify-content-between"
@@ -67,7 +33,7 @@
           />
           <a
             class="file-name"
-            href="<%- item.isFolder ? `/storage/navigate?folder=${item.id}` : ``%>"
+            href="<%- item.isFolder ? `/storage/shared/${shareLinkId}?folder=${item.id}` : ``%>"
             ><%= item.name %>
           </a>
         </div>
@@ -94,16 +60,6 @@
                 Details
               </button>
             </li>
-            <li>
-              <button
-                class="dropdown-item delete-modal-button"
-                data-bs-toggle="modal"
-                data-bs-target="#deleteItemModal"
-                data-id="<%= item.id%>"
-              >
-                Delete
-              </button>
-            </li>
             <% if(!item.isFolder){%>
             <li>
               <a
@@ -118,11 +74,7 @@
       </div>
       <%})%> <% } %>
     </main>
-    <%- include('./modals/delete-item-modal.ejs')%> <%-
-    include('./modals/details-modal.ejs')%><%-
-    include('./modals/share-modal.ejs')%>
-    <script src="/folderNameValidation.js"></script>
-    <script src="/deleteModalInitialization.js"></script>
+    <%-include('./modals/details-modal.ejs')%>
     <script src="/detailsModalInitialization.js"></script>
     <%- include('./partials/footer')%>
   </body>

@@ -10,24 +10,32 @@ const {
   renameFilePut,
   fileDownloadGet,
   fileSizeGet,
+  createShareLinkPost,
+  sharedFilesGet,
 } = require('../controllers/storageController');
+
+const { isAuth } = require('../middlewares/authMiddleware');
 
 const storageRouter = Router();
 
-storageRouter.get('/navigate', filesGet);
+storageRouter.get('/navigate', isAuth, filesGet);
 
 storageRouter.get('/download', fileDownloadGet);
 
+storageRouter.get('/shared/:shareLinkId', sharedFilesGet);
+
 storageRouter.post('/file-size', fileSizeGet);
 
-storageRouter.post('/check-name-availability', nameAvailabilityPost);
+storageRouter.post('/check-name-availability', isAuth, nameAvailabilityPost);
 
-storageRouter.post('/upload', handleFileInput, fileUploadPost);
+storageRouter.post('/upload', isAuth, handleFileInput, fileUploadPost);
 
-storageRouter.post('/create-folder', createFolderPost);
+storageRouter.post('/create-folder', isAuth, createFolderPost);
 
-storageRouter.delete('/delete', fileDelete);
+storageRouter.post('/create-share-link', createShareLinkPost);
 
-storageRouter.put('/rename', renameFilePut);
+storageRouter.delete('/delete', isAuth, fileDelete);
+
+storageRouter.put('/rename', isAuth, renameFilePut);
 
 module.exports = storageRouter;

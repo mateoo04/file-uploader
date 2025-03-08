@@ -32,6 +32,17 @@ h1 a {
   height: auto;
 }
 
+.share-button {
+  width: 30px;
+  height: 30px;
+  margin-right: 1em;
+}
+
+.share-button img {
+  width: 15px;
+  height: auto;
+  padding-bottom: 2px;
+}
 .main-content {
   flex: 1;
 }
@@ -80,4 +91,8 @@ input[type='submit']:hover {
 
 .form-container {
   display: none;
+}
+
+.share-legend {
+  font-size: 1.2em;
 }

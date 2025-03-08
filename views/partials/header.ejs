@@ -5,6 +5,9 @@
 </head>
 <header class="bg-primary pt-2 pb-2 mb-0">
   <nav class="d-flex justify-content-between container"><h1><a href="/">File uploader</h1></a>
+    <% if(locals?.showLogOut) {%>
     <form action="/auth/log-out" method="post">
       <button type="submit" class="btn text-white">Log out</button></nav>
-    </form></header>
+    </form>
+  <% } %>
+  </header>

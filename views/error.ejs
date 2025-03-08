@@ -10,8 +10,9 @@
     <main
       class="container main-content d-flex align-items-center justify-content-center"
     >
-      <h2 class="display-6 text-center">
-        <%- message ? message : 'Oops, there was an error.' %>
+      <h2 class="text-center">
+        <%- typeof message !== 'undefined' && message ? message : `Oops, there
+        was an error.` %>
         <a href="/">Click here to go home</a>
       </h2>
     </main>

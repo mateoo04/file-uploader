@@ -1,0 +1,59 @@
+<div class="modal fade" tabindex="-1" id="shareFolderModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Share</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form action="/storage/create-share-link" method="post" id="shareForm">
+          <legend class="share-legend">
+            For how long do you want the link to be active?
+          </legend>
+          <input
+            type="radio"
+            class="btn-check"
+            name="duration"
+            value="1"
+            id="1day"
+            autocomplete="off"
+          />
+          <label class="btn btn-secondary" for="1day">1 day</label>
+
+          <input
+            type="radio"
+            class="btn-check"
+            name="duration"
+            value="3"
+            id="3days"
+            autocomplete="off"
+          />
+          <label class="btn btn-secondary" for="3days">3 days</label>
+
+          <input
+            type="radio"
+            class="btn-check"
+            name="duration"
+            value="7"
+            id="7days"
+            autocomplete="off"
+          />
+          <label class="btn btn-secondary" for="7days">7 days</label>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <input
+          class="btn bg-primary text-white"
+          type="submit"
+          value="CREATE LINK"
+          form="shareForm"
+        />
+      </div>
+    </div>
+  </div>
+</div>

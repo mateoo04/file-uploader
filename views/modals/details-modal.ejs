@@ -14,7 +14,8 @@
         <p class="details-column-title">Name</p>
         <div class="d-flex align-content-center gap-2">
           <p class="details-name">nnnn</p>
-          <button class="btn bg-transparent border-0 p-0 rename-button">
+          <button class="btn bg-transparent border-0 p-0 rename-button <%- typeof locals.shareLinkId != 'undefined' || locals.shareLinkId ? 'd-none' : ''%>" 
+          <%- typeof locals.shareLinkId != 'undefined' || locals.shareLinkId ? 'disabled' : ''%>>
             <img class="pencil-icon" src="/icons/pencil.svg" alt="" />
           </button>
           <div class="form-container mb-3">
