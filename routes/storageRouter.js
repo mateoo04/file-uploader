@@ -3,11 +3,13 @@ const { Router } = require('express');
 const {
   filesGet,
   createFolderPost,
+  handleFileInput,
   fileUploadPost,
   nameAvailabilityPost,
   fileDelete,
   renameFilePut,
   fileDownloadGet,
+  fileSizeGet,
 } = require('../controllers/storageController');
 
 const storageRouter = Router();
@@ -16,15 +18,11 @@ storageRouter.get('/navigate', filesGet);
 
 storageRouter.get('/download', fileDownloadGet);
 
+storageRouter.post('/file-size', fileSizeGet);
+
 storageRouter.post('/check-name-availability', nameAvailabilityPost);
 
-storageRouter.post('/upload', fileUploadPost, (req, res, next) =>
-  res.redirect(
-    req.cookies.currentPath
-      ? `/storage/navigate?path=${req.cookies.currentPath}`
-      : '/storage/navigate'
-  )
-);
+storageRouter.post('/upload', handleFileInput, fileUploadPost);
 
 storageRouter.post('/create-folder', createFolderPost);
 

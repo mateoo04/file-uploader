@@ -57,9 +57,7 @@ app.use('/', indexRouter);
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.statusCode || 500);
-  res.render('error', {
-    message: `Error`,
-  });
+  res.render('error');
 });
 
 app.listen(port, () =>

@@ -1,7 +1,7 @@
 const detailsModalButtons = document.querySelectorAll('.details-modal-button');
 const detailsName = document.querySelector('.details-name');
 const detailsSize = document.querySelector('.details-size');
-const detailsUploadDate = document.querySelector('.details-upload-date');
+const detailsCreatedAt = document.querySelector('.details-created-at');
 
 const pencilButton = document.querySelector('.rename-button');
 
@@ -10,18 +10,32 @@ const formContainer = document.querySelector('.form-container');
 const formNameField = document.getElementById('fileName');
 
 let fileName = '';
+let fileId;
 
 detailsModalButtons.forEach((button) => {
   button.addEventListener('click', () => {
     fileName = button.getAttribute('data-name');
-    const size = button.getAttribute('data-size');
-    const uploadDate = button.getAttribute('data-upload-date');
+    fileId = button.getAttribute('data-id');
+    const createdAt = button.getAttribute('data-created-at');
 
     console.log('details click listener for ' + fileName);
 
     detailsName.innerText = fileName;
-    detailsSize.innerText = size;
-    detailsUploadDate.innerText = uploadDate;
+    detailsCreatedAt.innerText = createdAt;
+    detailsSize.innerText = 'Calculating...';
+
+    fetch('/storage/file-size', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ fileId }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        detailsSize.innerText = data.size;
+      })
+      .catch((error) => new Error());
   });
 });
 
@@ -36,7 +50,7 @@ pencilButton.addEventListener('click', () => {
 
   renameFileForm.setAttribute(
     'action',
-    `/storage/rename?previousName=${fileName}&_method=PUT`
+    `/storage/rename?fileId=${fileId}&_method=PUT`
   );
 });
 

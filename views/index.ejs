@@ -6,9 +6,9 @@
     <title>File uploader</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css" />
   </head>
-  <body>
+  <body class="d-flex flex-column">
     <%- include('./partials/header')%>
-    <main class="container main-content">
+    <main class="container main-content mt-3">
       <div class="d-flex justify-content-center gap-2">
         <button
           type="button"
@@ -33,12 +33,12 @@
 
       <div class="d-flex align-items-center mb-3">
         <button
-          onclick="window.location.href='<%- currentPath ? `/storage/navigate?path=${currentPath.split('/').slice(0,-1).join('/')}` : `/storage/navigate`%>'"
+          onclick="window.location.href='<%- backPath ? backPath : `/storage/navigate`%>'"
           class="back-button"
         >
           <img src="/icons/arrow-left-circle.svg" alt="" />
         </button>
-        <p><%- currentPath ? currentPath : '/'%></p>
+        <p><%- currentFolder ? currentFolder : 'Storage'%></p>
       </div>
       <% if(typeof items !== 'undefined' && Array.isArray(items) &&
       items.length) { %> <% items.forEach(item => {%>
@@ -47,13 +47,13 @@
       >
         <div class="d-flex gap-2 align-items-center">
           <img
-            src="<%- item.type === 'directory' ? '/icons/directory.svg' : '/icons/file.svg' %>"
+            src="<%- item.isFolder ? '/icons/directory.svg' : '/icons/file.svg' %>"
             alt=""
             class="file-icon"
           />
           <a
             class="file-name"
-            href="<%- `/storage/navigate?path=${(currentPath ? currentPath + '/' : '/') + item.name}`%>"
+            href="<%- item.isFolder ? `/storage/navigate?folder=${item.id}` : ``%>"
             ><%= item.name %>
           </a>
         </div>
@@ -73,9 +73,9 @@
                 class="dropdown-item details-modal-button"
                 data-bs-toggle="modal"
                 data-bs-target="#detailsModal"
+                data-id="<%= item.id %>"
                 data-name="<%= item.name%>"
-                data-size="<%= item.size %>"
-                data-upload-date="<%= item.uploadDate %>"
+                data-created-at="<%= item.createdAt %>"
               >
                 Details
               </button>
@@ -85,18 +85,18 @@
                 class="dropdown-item delete-modal-button"
                 data-bs-toggle="modal"
                 data-bs-target="#deleteItemModal"
-                data-name="<%= item.name%>"
+                data-id="<%= item.id%>"
               >
                 Delete
               </button>
             </li>
-            <% if(item.type !== 'directory'){%>
+            <% if(!item.isFolder){%>
             <li>
               <a
                 class="dropdown-item"
-                href="/storage/download?fileName=<%= item.name%>"
-                >Download</a
-              >
+                href="/storage/download?fileId=<%= item.id%>"
+                >Download
+              </a>
             </li>
             <%}%>
           </ul>

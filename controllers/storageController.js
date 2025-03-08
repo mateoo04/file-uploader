@@ -1,174 +1,327 @@
-const fs = require('fs');
 const path = require('node:path');
 const { format } = require('date-fns');
 const multer = require('multer');
+const { PrismaClient } = require('@prisma/client');
+const { supabase } = require('../config/supabase');
+
+const prisma = new PrismaClient();
 
 const {
-  createPath,
   getAvailableName,
-  getDirectorySizeSync,
+  getAllDescendants,
+  adjustFileSize,
 } = require('../utils/fileHelper');
 
-const uploadDir = 'uploads';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+const upload = multer(multer.memoryStorage());
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const folderPath = req.cookies.currentPath
-      ? path.join(uploadDir, req.cookies.currentPath)
-      : uploadDir;
-    cb(null, folderPath);
-  },
-  filename: async (req, file, cb) => {
-    getAvailableName(
-      req.cookies.currentPath
-        ? path.join(uploadDir, req.cookies.currentPath)
-        : uploadDir,
-      file.originalname
-    )
-      .then((availableName) => {
-        console.log('name:', availableName);
-        return cb(null, availableName);
-      })
-      .catch((err) => cb(err));
-  },
-});
+const handleFileInput = upload.single('file');
 
-const upload = multer({ storage });
+async function filesGet(req, res, next) {
+  try {
+    const selectedFolderId =
+      req.query?.folder == null ? null : req.query.folder;
 
-const fileUploadPost = upload.single('file');
+    let items, selectedFolder;
 
-function filesGet(req, res, next) {
-  let folderPath = path.join(uploadDir, req.query.path || '');
+    const findItems = () =>
+      prisma.file.findMany({
+        where: {
+          userId: res.locals.user.id,
+          parentId: selectedFolderId,
+        },
+        include: {
+          parent: true,
+          children: true,
+        },
+      });
 
-  if (!fs.existsSync(folderPath)) {
-    return res.status(404).json({ error: 'Folder not found' });
-  }
+    if (selectedFolderId) {
+      [items, selectedFolder] = await Promise.all([
+        findItems(),
+        prisma.file.findUnique({
+          where: {
+            id: selectedFolderId,
+          },
+          include: {
+            parent: true,
+          },
+        }),
+      ]);
+    } else items = await findItems();
 
-  fs.readdir(folderPath, (err, items) => {
-    if (err) {
-      return next(err);
-    }
+    if (selectedFolder) {
+      res.cookie('currentFolder', selectedFolder, {
+        httpOnly: false,
+        sameSite: 'strict',
+      });
+    } else res.clearCookie('currentFolder');
 
-    items = items.map((item) => {
-      const fullPath = path.join(folderPath, item);
-
-      const stats = fs.lstatSync(fullPath);
-
-      return {
-        name: item,
-        type: stats.isDirectory()
-          ? 'directory'
-          : path.extname(item).toLowerCase().slice(1),
-        size:
-          stats.size +
-          (stats.isDirectory() ? getDirectorySizeSync(fullPath) : 0) +
-          ' KB',
-        uploadDate: format(stats.birthtime, `d.M.yyyy., H:mm`),
-      };
-    });
-
-    if (folderPath.startsWith('uploads')) {
-      folderPath = folderPath.slice(7);
-    }
-
-    res.cookie('currentPath', folderPath, {
-      httpOnly: false,
-      sameSite: 'strict',
-    });
+    items = items.map((item) => ({
+      ...item,
+      createdAt: format(item.createdAt, 'd.M.yyy., H:mm'),
+    }));
 
     res.render('index', {
       items,
-      currentPath: folderPath,
+      currentFolder: selectedFolder?.name,
+      backPath:
+        selectedFolder && selectedFolder.parentId != null
+          ? `/storage/navigate?folder=${selectedFolder.parentId}`
+          : '/storage/navigate',
     });
-  });
+  } catch (err) {
+    next(err);
+  }
 }
 
-function createFolderPost(req, res, next) {
+async function createFolderPost(req, res, next) {
   const folderName = req.body.folderName;
-  const currentPath = req.cookies.currentPath || req.body?.currentPath;
-  let folderPath = createPath(currentPath, folderName);
+  const currentFolderId =
+    req.cookies.currentFolder != null ? req.cookies.currentFolder.id : null;
 
-  if (!fs.existsSync(folderPath)) {
-    fs.mkdirSync(folderPath, { recursive: true });
-
-    if (folderPath.startsWith('uploads')) {
-      folderPath = folderPath.slice(7);
-    }
+  try {
+    await prisma.file.create({
+      data: {
+        name: folderName,
+        isFolder: true,
+        parentId: currentFolderId,
+        userId: res.locals.user.id,
+      },
+    });
 
     return res.redirect(
-      `/storage/navigate?path=${
-        req.cookies.currentPath || req.body?.currentPath
-      }`
+      req.cookies.currentFolder != null
+        ? `/storage/navigate?folder=${currentFolderId}`
+        : '/storage/navigate'
     );
+  } catch (err) {
+    next(err);
   }
-
-  return res.status(400).json({ error: 'Folder already exists' });
 }
 
-function nameAvailabilityPost(req, res, next) {
-  const fileName = req.body.folderName || req.body.fileName;
-  const currentPath = req.cookies.currentPath || req.body?.currentPath;
-  if (fs.existsSync(createPath(currentPath, fileName)))
-    return res.json({ available: false });
+async function nameAvailabilityPost(req, res) {
+  try {
+    const fileName = req.body.folderName || req.body.fileName;
+    const currentFolderId =
+      req.cookies.currentFolder != null ? req.cookies.currentFolder.id : null;
 
-  return res.json({ available: true });
+    const items = await prisma.file.findMany({
+      where: {
+        userId: res.locals.user.id,
+        parentId: currentFolderId,
+      },
+      include: {
+        parent: true,
+        children: true,
+      },
+    });
+
+    if (items.map((item) => item.name).includes(fileName))
+      return res.json({ available: false });
+
+    return res.json({ available: true });
+  } catch (err) {
+    res.status(500).send('Error while checking name availability');
+  }
 }
 
-function fileDelete(req, res, next) {
-  const pathToDelete = createPath(req.cookies?.currentPath, req.query.fileName);
+async function deleteItemAndDescendants(req, res, next, fileId) {
+  try {
+    const children = await prisma.file.findMany({
+      where: {
+        parentId: fileId,
+      },
+    });
 
-  if (fs.existsSync(pathToDelete)) {
-    if (fs.lstatSync(pathToDelete).isDirectory()) {
-      fs.rm(pathToDelete, { recursive: true }, (err) => {
-        if (err) return next(err);
-        res.redirect(`/storage/navigate?path=${req.cookies.currentPath}`);
-      });
-    } else if (fs.lstatSync(pathToDelete).isFile()) {
-      fs.unlink(pathToDelete, (err) => {
-        if (err) return next(err);
-        res.redirect(`/storage/navigate?path=${req.cookies.currentPath}`);
-      });
+    for (const child of children) {
+      if (child.id != null && child.id != '')
+        await deleteItemAndDescendants(req, res, next, child.id);
     }
+
+    const deletedItem = await prisma.file.delete({
+      where: {
+        id: fileId,
+      },
+    });
+
+    if (deletedItem.storagePath) {
+      const { data, error } = await supabase.storage
+        .from('files')
+        .remove([deletedItem.storagePath]);
+
+      if (error)
+        console.err('Error while deleting a file from Supabase:', error);
+    }
+  } catch (err) {
+    next('Error while deleting items: ' + err);
   }
+}
+
+async function fileDelete(req, res, next) {
+  await deleteItemAndDescendants(req, res, next, req.query.fileId);
+
+  return res.redirect(
+    req.cookies.currentFolder != null
+      ? `/storage/navigate?folder=${req.cookies.currentFolder.id}`
+      : '/storage/navigate'
+  );
 }
 
 async function renameFilePut(req, res, next) {
-  const oldName = req.query.previousName;
+  const fileId = req.query.fileId;
   const newName = await getAvailableName(
-    req.cookies.currentPath
-      ? path.join(uploadDir, req.cookies.currentPath)
-      : uploadDir,
+    req.cookies.currentFolder != null ? req.cookies.currentFolder.id : null,
     req.body.fileName
   );
 
-  const oldPath = createPath(req.cookies.currentPath, oldName);
-  const newPath = oldPath.slice(0, -oldName.length) + newName;
+  try {
+    await prisma.file.update({
+      where: {
+        id: fileId,
+      },
+      data: {
+        name: newName,
+      },
+    });
 
-  fs.rename(oldPath, newPath, function (err) {
-    if (err) next(`Error while renaming file: ${err}`);
-
-    res.redirect(`/storage/navigate?path=${req.cookies.currentPath}`);
-  });
+    return res.redirect(
+      req.cookies.currentFolder != null
+        ? `/storage/navigate?folder=${req.cookies.currentFolder.id}`
+        : '/storage/navigate'
+    );
+  } catch (err) {
+    next(`Error while renaming file: ${err}`);
+  }
 }
 
-function fileDownloadGet(req, res, next) {
-  const fileName = req.query.fileName;
-  const filePath = createPath(req.cookies.currentPath, fileName);
+async function fileDownloadGet(req, res, next) {
+  const fileId = req.query.fileId;
 
-  res.download(filePath, fileName, (err) => {
-    if (err) next(err);
-  });
+  try {
+    const file = await prisma.file.findUnique({
+      where: {
+        id: fileId,
+      },
+    });
+
+    const { data, error } = await supabase.storage
+      .from('files')
+      .download(file.storagePath);
+
+    if (error) next('Failed downloading the file from Supabase: ' + error);
+
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename*=UTF-8''${encodeURIComponent(file.name)}`
+    );
+
+    res.setHeader('Content-Type', data.type);
+
+    res.send(data);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function fileUploadPost(req, res, next) {
+  if (!req.file) {
+    return next('No file uploaded.');
+  } else if (req.file.size > 50000000) {
+    return res
+      .status(400)
+      .render('error', { message: 'Maximum file size of 50 MB was exceeded!' });
+  }
+
+  req.file.originalname = Buffer.from(req.file.originalname, 'latin1').toString(
+    'utf8'
+  );
+  const fileName = Date.now() + '_' + req.file.originalname;
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('files')
+      .upload(fileName.replace(/[^a-zA-Z0-9_-]/g, '_'), req.file.buffer, {
+        contentType: req.file.mimetype,
+      });
+
+    if (error)
+      next('Error uploading file to Supabase: ' + JSON.stringify(error));
+
+    const availableName = await getAvailableName(
+      req.cookies.currentFolder != null ? req.cookies.currentFolder.id : null,
+      req.file.originalname
+    );
+
+    await prisma.file.create({
+      data: {
+        name: availableName,
+        isFolder: false,
+        parentId:
+          req.cookies.currentFolder != null
+            ? req.cookies.currentFolder.id
+            : null,
+        storagePath: data.path,
+        userId: res.locals.user.id,
+      },
+    });
+
+    return res.redirect(
+      req.cookies.currentFolder != null
+        ? `/storage/navigate?folder=${req.cookies.currentFolder.id}`
+        : '/storage/navigate'
+    );
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function fileSizeGet(req, res) {
+  try {
+    const file = await prisma.file.findUnique({
+      where: {
+        id: req.body.fileId,
+      },
+    });
+
+    let totalSize = 0;
+
+    if (!file.isFolder) {
+      const { data, error } = await supabase.storage.from('files').list('', {
+        search: file.storagePath,
+      });
+
+      let size = adjustFileSize(data[0].metadata.size);
+
+      if (error) return next(error);
+      else return res.json({ size });
+    } else {
+      const descendants = await getAllDescendants(file.id);
+
+      for (const descendant of descendants) {
+        const { data, error } = await supabase.storage.from('files').list('', {
+          search: descendant.storagePath,
+        });
+
+        if (error) return next(error);
+
+        totalSize += data[0].metadata.size;
+      }
+
+      return res.json({ size: adjustFileSize(totalSize) });
+    }
+  } catch (err) {
+    res.status(500).send('Error while calculating file size');
+  }
 }
 
 module.exports = {
   filesGet,
   createFolderPost,
+  handleFileInput,
   fileUploadPost,
   nameAvailabilityPost,
   fileDelete,
   renameFilePut,
   fileDownloadGet,
+  fileSizeGet,
 };

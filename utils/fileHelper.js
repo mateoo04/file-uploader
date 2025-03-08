@@ -1,21 +1,21 @@
-const fs = require('fs');
-const fsPromises = require('fs').promises;
 const path = require('node:path');
+const { PrismaClient } = require('@prisma/client');
 
-const uploadDir = 'uploads';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+const prisma = new PrismaClient();
 
-function createPath(currentPath, fileName) {
-  return currentPath
-    ? path.join(uploadDir, currentPath, fileName)
-    : path.join(uploadDir, fileName);
-}
-
-async function getAvailableName(folderPath, name) {
+async function getAvailableName(parentFolderId, name) {
   try {
-    const items = await fsPromises.readdir(folderPath);
+    let items = await prisma.file.findMany({
+      where: {
+        parentId: parentFolderId,
+      },
+      select: {
+        name: true,
+      },
+    });
+
+    items = items.map((item) => item.name);
+
     if (!items.includes(name)) {
       return name;
     }
@@ -33,27 +33,27 @@ async function getAvailableName(folderPath, name) {
   }
 }
 
-function getDirectorySizeSync(directory) {
-  let totalSize = 0;
+async function getAllDescendants(folderId) {
+  const children = await prisma.file.findMany({
+    where: {
+      parentId: folderId,
+    },
+  });
 
-  try {
-    const files = fs.readdirSync(directory, { withFileTypes: true });
-
-    for (const file of files) {
-      const filePath = path.join(directory, file.name);
-      const stats = fs.lstatSync(filePath);
-
-      if (stats.isDirectory()) {
-        totalSize += getDirectorySizeSync(filePath);
-      } else {
-        totalSize += stats.size;
-      }
-    }
-  } catch (error) {
-    console.error('Error reading directory:', error);
+  for (const child of children) {
+    const descendants = await getAllDescendants(child.id);
+    children.concat(descendants);
   }
 
-  return totalSize;
+  return children;
 }
 
-module.exports = { createPath, getAvailableName, getDirectorySizeSync };
+function adjustFileSize(sizeInBytes) {
+  if (sizeInBytes >= 1000000) {
+    return `${Math.round((sizeInBytes / 1000000) * 100) / 100} MB`;
+  } else if (sizeInBytes >= 1000)
+    return `${Math.round((sizeInBytes / 1000) * 100) / 100} KB`;
+  else return `${sizeInBytes} B`;
+}
+
+module.exports = { getAvailableName, getAllDescendants, adjustFileSize };

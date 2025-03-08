@@ -24,4 +24,18 @@ model User{
   id String @id @default(uuid())
   username String @unique
   password String
+  files File[]
+}
+
+model File{
+  id String @id @default(uuid())
+  name String
+  isFolder Boolean  
+  parentId String?
+  parent File? @relation("ParentDirectory",fields: [parentId], references: [id])
+  children File[] @relation("ParentDirectory")
+  createdAt DateTime @default(now())
+  storagePath String?
+  userId String
+  user User @relation(fields: [userId], references: [id])
 }
