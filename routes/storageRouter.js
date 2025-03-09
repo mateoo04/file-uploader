@@ -32,7 +32,7 @@ storageRouter.post('/upload', isAuth, handleFileInput, fileUploadPost);
 
 storageRouter.post('/create-folder', isAuth, createFolderPost);
 
-storageRouter.post('/create-share-link', createShareLinkPost);
+storageRouter.post('/create-share-link', isAuth, createShareLinkPost);
 
 storageRouter.delete('/delete', isAuth, fileDelete);
 

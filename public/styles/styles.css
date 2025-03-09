@@ -36,6 +36,7 @@ h1 a {
   width: 30px;
   height: 30px;
   margin-right: 1em;
+  background-color: #4d4d4d;
 }
 
 .share-button img {
@@ -69,6 +70,13 @@ button:hover,
 input[type='submit']:hover {
   opacity: 0.8;
   cursor: pointer;
+}
+
+.btn,
+input {
+  border-radius: 20px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
 }
 
 .options-icon,

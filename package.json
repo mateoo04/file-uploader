@@ -4,11 +4,16 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "dotenv -e .env.development -- node app.js",
+    "start": "dotenv -e .env.production -- node.js",
+    "migrate:dev": "dotenv -e .env.development -- npx prisma migrate dev",
+    "migrate:deploy": "npx prisma migrate deploy"
   },
   "author": "Mateo",
   "license": "ISC",
   "devDependencies": {
+    "dotenv-cli": "^8.0.0",
     "prisma": "^6.4.1",
     "sass": "^1.85.1"
   },
