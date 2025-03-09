@@ -266,14 +266,18 @@ async function fileDownloadGet(req, res, next) {
 
     if (error) next('Failed downloading the file from Supabase: ' + error);
 
+    const arrayBuffer = await data.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
     res.setHeader(
       'Content-Disposition',
       `attachment; filename*=UTF-8''${encodeURIComponent(file.name)}`
     );
 
     res.setHeader('Content-Type', data.type);
+    res.setHeader('Content-Length', buffer.length);
 
-    res.send(data);
+    res.send(buffer);
   } catch (err) {
     next(err);
   }
