@@ -23,7 +23,7 @@ authRouter.post(
   validateLogIn,
   checkLogInValidationPost,
   passport.authenticate('local', {
-    failureRedirect: '/log-in',
+    failureRedirect: '/auth/log-in',
     successRedirect: '/',
     failureMessage: 'Invalid username or password entered',
   })
