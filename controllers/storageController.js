@@ -209,18 +209,24 @@ async function deleteItemAndDescendants(req, res, next, fileId) {
         console.err('Error while deleting a file from Supabase:', error);
     }
   } catch (err) {
-    next('Error while deleting items: ' + err);
+    if (!res.headersSent) next(new Error('Error while deleting items: ' + err));
   }
 }
 
 async function fileDelete(req, res, next) {
-  await deleteItemAndDescendants(req, res, next, req.query.fileId);
+  try {
+    await deleteItemAndDescendants(req, res, next, req.query.fileId);
 
-  return res.redirect(
-    req.cookies.currentFolder != null
-      ? `/storage/navigate?folder=${req.cookies.currentFolder.id}`
-      : '/storage/navigate'
-  );
+    if (!res.headersSent) {
+      return res.redirect(
+        req.cookies.currentFolder != null
+          ? `/storage/navigate?folder=${req.cookies.currentFolder.id}`
+          : '/storage/navigate'
+      );
+    }
+  } catch (err) {
+    if (!res.headersSent) next(new Error('Error while deleting items: ' + err));
+  }
 }
 
 async function renameFilePut(req, res, next) {
