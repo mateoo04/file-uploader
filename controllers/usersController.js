@@ -24,8 +24,6 @@ const validateSignUp = [
     .withMessage('Password must contain at least one uppercase letter')
     .matches(/[0-9]/)
     .withMessage('Password must contain at least one number')
-    .matches(/[\W]/)
-    .withMessage('Password must contain at least one special character')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long')
     .escape(),

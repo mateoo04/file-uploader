@@ -5,8 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "dotenv -e .env.development -- node app.js",
-    "start": "dotenv -e .env.production -- node.js",
+    "dev": "dotenv -e .env.development -- node --watch app.js",
+    "start": "node app.js",
     "migrate:dev": "dotenv -e .env.development -- npx prisma migrate dev",
     "migrate:deploy": "npx prisma migrate deploy"
   },
@@ -14,11 +14,11 @@
   "license": "ISC",
   "devDependencies": {
     "dotenv-cli": "^8.0.0",
-    "prisma": "^6.4.1",
+    "prisma": "^6.7.0",
     "sass": "^1.85.1"
   },
   "dependencies": {
-    "@prisma/client": "^6.4.1",
+    "@prisma/client": "^6.7.0",
     "@quixo3/prisma-session-store": "^3.1.13",
     "@supabase/supabase-js": "^2.49.1",
     "bcryptjs": "^3.0.2",
